@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Local Ollama Chat</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="{{ url_for('static', filename='chat.js') }}" defer></script>
+</head>
+<body>
+  <main class="chat-shell">
+    <header class="topbar">
+      <div class="brand-mark" aria-hidden="true">✳</div>
+      <div>
+        <h1>Local Chat</h1>
+        <p><span class="status-dot"></span> Gemma 3 · running locally</p>
+      </div>
+      <nav class="main-nav" aria-label="Main navigation">
+        <a class="nav-link active" href="{{ url_for('index') }}" aria-current="page">Chat</a>
+        <a class="nav-link" href="{{ url_for('documents') }}">Document collection</a>
+      </nav>
+      <button id="clear-button" class="clear-button" type="button" title="Clear conversation">Clear chat</button>
+    </header>
+
+    <section id="conversation" class="conversation" aria-label="Conversation" aria-live="polite">
+      <div id="welcome" class="welcome">
+        <div class="welcome-icon" aria-hidden="true">✳</div>
+        <h2>What’s on your mind?</h2>
+        <p>Your conversation stays in this browser and runs on your machine.</p>
+      </div>
+    </section>
+
+    <form id="chat-form" class="composer">
+      <label class="sr-only" for="message-input">Message</label>
+      <textarea id="message-input" rows="1" placeholder="Message Gemma…" required></textarea>
+      <button id="send-button" type="submit" aria-label="Send message"><span aria-hidden="true">↑</span></button>
+      <p class="composer-note">Local model · Responses may not always be accurate</p>
+    </form>
+  </main>
+</body>
+</html>

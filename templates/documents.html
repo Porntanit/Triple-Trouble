@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Document Collection · Local Ollama Chat</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="chat-shell">
+    <header class="topbar">
+      <div class="brand-mark" aria-hidden="true">✳</div>
+      <div class="topbar-title">
+        <h1>Document Collection</h1>
+        <p><span class="status-dot"></span> Stored on this machine</p>
+      </div>
+      <nav class="main-nav" aria-label="Main navigation">
+        <a class="nav-link" href="{{ url_for('index') }}">Chat</a>
+        <a class="nav-link active" href="{{ url_for('documents') }}" aria-current="page">Document collection</a>
+      </nav>
+    </header>
+
+    <section class="document-page" aria-labelledby="documents-heading">
+      <div class="page-heading">
+        <h2 id="documents-heading">Your documents</h2>
+        <p>Upload PDF, TXT, DOCX, or Markdown files. PDF text is indexed for chat. Maximum size: 16 MB per file.</p>
+      </div>
+
+      {% with notices = get_flashed_messages(with_categories=true) %}
+        {% if notices %}
+          <div class="notice-list" aria-live="polite">
+            {% for category, message in notices %}
+              <p class="notice {{ category }}" role="status">{{ message }}</p>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <form class="upload-form" action="{{ url_for('upload_document') }}" method="post" enctype="multipart/form-data">
+        <label for="document-file">Select a document</label>
+        <div class="upload-controls">
+          <input id="document-file" name="file" type="file" accept=".pdf,.txt,.docx,.md" required>
+          <button class="primary-button" type="submit">Upload</button>
+        </div>
+      </form>
+
+      <section class="file-section" aria-labelledby="file-list-heading">
+        <div class="file-section-heading">
+          <h3 id="file-list-heading">Uploaded files</h3>
+          <span>{{ files|length }} {{ 'file' if files|length == 1 else 'files' }}</span>
+        </div>
+        {% if files %}
+          <ul class="file-list">
+            {% for file in files %}
+              <li class="file-row">
+                <span class="file-icon" aria-hidden="true">▤</span>
+                <span class="file-details">
+                  <a class="file-name" href="{{ url_for('uploaded_document', filename=file.name) }}" target="_blank" rel="noopener">{{ file.name }}</a>
+                  <span class="file-size">{{ file.size|filesize }}</span>
+                  {% if file.name.lower().endswith('.pdf') %}
+                    {% if file.index and file.index.status == 'indexed' %}
+                      <span class="file-size">Indexed · {{ file.index.chunk_count }} chunks</span>
+                    {% elif file.index and file.index.status == 'no_text' %}
+                      <span class="file-size">Not indexed · no extractable text</span>
+                    {% elif file.index and file.index.status == 'error' %}
+                      <span class="file-size">Indexing error · {{ file.index.error }}</span>
+                    {% else %}
+                      <span class="file-size">Not indexed</span>
+                    {% endif %}
+                  {% else %}
+                    <span class="file-size">Stored · only PDFs are indexed for chat</span>
+                  {% endif %}
+                </span>
+                <form action="{{ url_for('delete_document', filename=file.name) }}" method="post">
+                  <button class="delete-button" type="submit" aria-label="Delete {{ file.name }}">Delete</button>
+                </form>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <div class="empty-files">
+            <p>No documents uploaded yet.</p>
+            <span>Choose a file above to add it to your collection.</span>
+          </div>
+        {% endif %}
+      </section>
+    </section>
+  </main>
+</body>
+</html>
