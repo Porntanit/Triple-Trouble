@@ -1,30 +1,14 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Document Collection · Local Ollama Chat</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-  <main class="chat-shell">
-    <header class="topbar">
-      <div class="brand-mark" aria-hidden="true">✳</div>
-      <div class="topbar-title">
-        <h1>Document Collection</h1>
-        <p><span class="status-dot"></span> Stored on this machine</p>
-      </div>
-      <nav class="main-nav" aria-label="Main navigation">
-        <a class="nav-link" href="{{ url_for('index') }}">Chat</a>
-        <a class="nav-link active" href="{{ url_for('documents') }}" aria-current="page">Document collection</a>
-      </nav>
-    </header>
-
-    <section class="document-page" aria-labelledby="documents-heading">
+{% extends 'base.html' %}
+{% block title %}Document collection{% endblock %}
+{% block breadcrumb %}DOCUMENTS{% endblock %}
+{% block content %}
+<div class="page-content">    <section class="document-page" aria-labelledby="documents-heading">
       <div class="page-heading">
-        <h2 id="documents-heading">Your documents</h2>
+        <p class="eyebrow">THE KNOWLEDGE BEHIND YOUR ANSWERS</p><h1 id="documents-heading">A little more <em>evidence.</em></h1>
         <p>Upload PDF, TXT, DOCX, or Markdown files. PDF text is indexed for chat. Maximum size: 16 MB per file.</p>
       </div>
+
+      {% if collection_error %}<p class="notice error" role="alert">{{ collection_error }}</p>{% endif %}
 
       {% with notices = get_flashed_messages(with_categories=true) %}
         {% if notices %}
@@ -39,17 +23,19 @@
       <form class="upload-form" action="{{ url_for('upload_document') }}" method="post" enctype="multipart/form-data">
         <label for="document-file">Select a document</label>
         <div class="upload-controls">
-          <input id="document-file" name="file" type="file" accept=".pdf,.txt,.docx,.md" required>
-          <button class="primary-button" type="submit">Upload</button>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input id="document-file" name="file" type="file" accept=".pdf,.txt,.docx,.md" required {{ 'disabled' if collection_error }}>
+          <button class="primary-button" type="submit" {{ 'disabled' if collection_error }}>Upload</button>
         </div>
       </form>
 
       <section class="file-section" aria-labelledby="file-list-heading">
         <div class="file-section-heading">
           <h3 id="file-list-heading">Uploaded files</h3>
-          <span>{{ files|length }} {{ 'file' if files|length == 1 else 'files' }}</span>
+          <span>{% if collection_error %}Storage unavailable{% else %}{{ files|length }} {{ 'file' if files|length == 1 else 'files' }}{% endif %}</span>
         </div>
-        {% if files %}
+        {% if collection_error %}
+          <p class="muted">The file list could not be loaded. Retry after resolving the storage issue.</p>
+        {% elif files %}
           <ul class="file-list">
             {% for file in files %}
               <li class="file-row">
@@ -71,8 +57,9 @@
                     <span class="file-size">Stored · only PDFs are indexed for chat</span>
                   {% endif %}
                 </span>
+                {% if file.name.lower().endswith('.pdf') %}<form action="{{ url_for('reindex_document', filename=file.name) }}" method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="outline-button" type="submit">Reindex</button></form>{% endif %}
                 <form action="{{ url_for('delete_document', filename=file.name) }}" method="post">
-                  <button class="delete-button" type="submit" aria-label="Delete {{ file.name }}">Delete</button>
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="delete-button" type="submit" aria-label="Delete {{ file.name }}">Delete</button>
                 </form>
               </li>
             {% endfor %}
@@ -85,6 +72,5 @@
         {% endif %}
       </section>
     </section>
-  </main>
-</body>
-</html>
+</div>
+{% endblock %}

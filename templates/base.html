@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <title>{% block title %}Triple-Trouble{% endblock %} · Nutrition, made personal</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='nutrition.css') }}">
+  <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='images.js') }}" defer></script>
+  {% block scripts %}{% endblock %}
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <a class="brand" href="{{ url_for('index') }}"><span class="brand-mark">✳</span><span>Triple-Trouble<small>THE NUTRITION STUDIO</small></span></a>
+    <div class="nav-caption">YOUR WORKSPACE</div>
+    <nav aria-label="Main navigation">
+      {% for endpoint, icon, label in [('index','✳','Nutrition chat'),('profile_page','◎','Your profile'),('documents','▤','Document collection'),('evaluation_page','▥','Calorie tracker')] %}
+      <a class="nav-item {{ 'selected' if request.endpoint == endpoint }}" href="{{ url_for(endpoint) }}" {% if request.endpoint == endpoint %}aria-current="page"{% endif %}><span aria-hidden="true">{{ icon }}</span>{{ label }}</a>
+      {% endfor %}
+    </nav>
+    <div class="sidebar-bottom"><span class="local-pill">● LOCAL & PRIVATE</span><p>Powered by Ollama.<br>Your profile and documents<br>stay on this machine.</p><a href="{{ url_for('profile_page') }}" class="profile-chip"><span class="profile-avatar" data-profile-avatar>{{ (active_profile.name[0] if active_profile else '?')|upper }}</span><span><span data-profile-name>{{ active_profile.name if active_profile else 'Create your profile' }}</span><small data-profile-goal>{{ active_profile.dietary_goal if active_profile else 'Make advice fit your day' }}</small></span></a></div>
+  </aside>
+  <main class="workspace">
+    <header class="workspace-header"><span>PERSONALIZED NUTRITION / <strong>{% block breadcrumb %}WORKSPACE{% endblock %}</strong></span><span id="model-status" class="model-status" role="status">Checking Ollama…</span></header>
+    {% block content %}{% endblock %}
+    <footer class="site-footer">Triple-Trouble · BAScii Generative AI <span>Educational prototype. AI suggestions need human review.</span></footer>
+  </main>
+</div>
+</body>
+</html>

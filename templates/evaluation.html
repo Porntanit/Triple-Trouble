@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Calorie tracker{% endblock %}
+{% block breadcrumb %}DAILY TRACKING{% endblock %}
+{% block content %}
+<div class="page-content calorie-page" data-tracking-date="{{ selected_date }}">
+<div class="heading-row"><div><p class="eyebrow">SMALL CHECK-INS. YOUR EVERYDAY PICTURE.</p><h1>Your day, <em>on a plate.</em></h1><p class="intro">Log what you eat, follow your own calorie target, and take a moment to check in.</p></div><form method="get" class="tracking-date"><label for="tracking-date">Viewing date · Bangkok time</label><input id="tracking-date" name="date" type="date" max="{{ today }}" value="{{ selected_date }}" required><button class="outline-button" type="submit">View day</button></form></div>
+{% with notices = get_flashed_messages(with_categories=true) %}{% for category,message in notices %}<p class="notice {{ category }}">{{ message }}</p>{% endfor %}{% endwith %}
+{% if not tracking %}
+<div class="panel"><h2>Start with your profile</h2><p class="muted">Save a profile to keep your calorie history on this device.</p><a class="primary-button inline-button" href="{{ url_for('profile_page') }}">Create my profile ↗</a></div>
+{% else %}
+{% set day = tracking.selected %}
+<div id="tracking-status" role="status" aria-live="polite" hidden></div>
+<div class="stats-row calorie-stats">
+  <section class="panel calorie-card"><p class="eyebrow">01 / CONSUMED</p><span>Total calories consumed {{ 'today' if selected_date == today else 'on this date' }}</span><div class="calorie-number"><strong id="calories-consumed">{{ '%g'|format(day.consumed) }}</strong><small>kcal</small></div><span id="entry-count">{{ tracking.entries|length }} food entries logged</span></section>
+  <section class="panel calorie-card remaining-card"><p class="eyebrow">02 / REMAINING</p><span>Calories remaining</span><div class="calorie-number"><strong id="calories-remaining">{{ '%g'|format(day.remaining) if day.remaining is not none else '—' }}</strong><small>kcal</small></div><span id="remaining-note">{% if day.target is none %}Set your own target below{% elif day.remaining < 0 %}{{ '%g'|format(-day.remaining) }} kcal above your target{% else %}Of your {{ '%g'|format(day.target) }} kcal target{% endif %}</span></section>
+  <section class="panel calorie-card rating-card"><p class="eyebrow">03 / DAILY CHECK-IN</p><span>How do you feel about your day?</span><div class="self-rating" role="group" aria-label="Daily self-rating from 1 to 5">{% for score in range(1,6) %}<button type="button" data-self-rating="{{ score }}" aria-label="Rate my day {{ score }} out of 5" aria-pressed="{{ 'true' if day.rating == score else 'false' }}" class="{{ 'chosen' if day.rating == score }}">{{ score }}</button>{% endfor %}</div><span id="self-rating-note">{{ 'Your rating: ' ~ day.rating ~ ' / 5' if day.rating else 'Your own reflection, from 1 to 5' }}</span></section>
+</div>
+<div class="tracking-forms">
+<section class="panel"><h2>Your daily calorie target</h2>
+{% if active_profile.daily_target %}<div class="calorie-number"><strong>{{ active_profile.daily_target }}</strong><small>kcal/day · estimated maintenance</small></div><p class="muted">Calculated from your profile's age, height, weight and activity. This is an estimate, not a strict upper limit. Past days keep their saved target.</p>{% else %}<p class="subtle-notice">Add your age, height, weight and energy equation in Your profile to calculate your daily target.</p>{% endif %}
+<a class="outline-button inline-button" href="{{ url_for('profile_page') }}">Update my profile ↗</a></section>
+<section class="panel"><h2>Add a meal photo</h2><p class="muted">Scan a food photo or label. Review the estimate, then confirm you ate it to add it here.</p>{% include 'image_scanner.html' %}</section>
+</div>
+<section class="panel"><div class="heading-row"><h2>Food log · {{ selected_date }}</h2><span class="muted">Your entries, your estimates</span></div><ul id="food-log" class="calorie-food-log">{% for entry in tracking.entries %}<li>{% if entry.has_photo %}<img class="food-thumb" src="{{ url_for('consumed_photo', entry_id=entry.id) }}" alt="{{ entry.food }}">{% endif %}<span>{{ entry.food }}</span><strong>{{ '%g'|format(entry.calories) }} kcal</strong><button type="button" class="delete-button" data-delete-entry="{{ entry.id }}" aria-label="Remove {{ entry.food }}">Remove</button></li>{% else %}<li class="muted">No food logged for this date yet.</li>{% endfor %}</ul></section>
+<section class="panel table-wrap"><div class="heading-row"><div><p class="eyebrow">ONE DAY AT A TIME</p><h2>Calorie tracking history</h2></div><span class="muted">Newest first</span></div><table><thead><tr><th>Date</th><th>Total consumed</th><th>Calories remaining</th><th>My rating</th></tr></thead><tbody id="calorie-history">{% for row in tracking.history %}<tr><th><a href="{{ url_for('evaluation_page', date=row.day) }}">{{ row.day }}</a></th><td>{{ '%g'|format(row.consumed) }} kcal</td><td>{{ '%g'|format(row.remaining) }} kcal{% if row.remaining < 0 %}<small class="over-target">Above target</small>{% endif %}</td><td>{{ (row.rating ~ ' / 5') if row.rating else 'Not rated' }}</td></tr>{% else %}<tr><td colspan="4" class="muted">Your daily history will appear when you save a target, food entry or rating.</td></tr>{% endfor %}</tbody></table></section>
+<p class="muted">Remaining = saved target − calories logged. Negative values mean your logged total is above the target. Your target is an estimated maintenance value from your profile; photo estimates and OCR readings need review.</p>
+{% endif %}
+
+</div>
+{% endblock %}

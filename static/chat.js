@@ -3,13 +3,20 @@ const input = document.querySelector('#message-input');
 const sendButton = document.querySelector('#send-button');
 const conversation = document.querySelector('#conversation');
 const clearButton = document.querySelector('#clear-button');
-const STORAGE_KEY = 'local-ollama-chat-messages';
+const modeSelect = document.querySelector('#chat-mode');
+let STORAGE_KEY = 'triple-trouble-' + modeSelect.value;
 
 let messages = loadMessages();
 
 function loadMessages() {
   try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    let raw = localStorage.getItem(STORAGE_KEY);
+    // Keep the original app's browser history when first opening General mode.
+    if (raw === null && STORAGE_KEY === 'triple-trouble-general') {
+      raw = localStorage.getItem('local-ollama-chat-messages');
+      if (raw !== null) localStorage.setItem(STORAGE_KEY, raw);
+    }
+    const saved = JSON.parse(raw || '[]');
     return Array.isArray(saved) ? saved.filter((message) =>
       message && ['user', 'assistant'].includes(message.role) && typeof message.content === 'string'
     ) : [];
@@ -19,7 +26,8 @@ function loadMessages() {
 }
 
 function saveMessages() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(messages)); }
+  catch { /* Chat remains usable when browser storage is unavailable. */ }
 }
 
 function appendAssistantContent(container, text) {
@@ -78,22 +86,10 @@ function renderMessage(message) {
     content.textContent = message.content;
   }
   row.append(avatar, content);
-  const sources = Array.isArray(message.sources) ? message.sources.filter((source) =>
-    source && typeof source.filename === 'string' && Number.isInteger(source.page) && source.page > 0
-  ) : [];
-  if (message.role === 'assistant' && sources.length) {
-    const sourceSection = document.createElement('section');
-    sourceSection.className = 'message-sources';
-    const heading = document.createElement('h3');
-    heading.textContent = 'Sources used';
-    const list = document.createElement('ul');
-    for (const source of sources) {
-      const item = document.createElement('li');
-      item.textContent = `${source.filename} · page ${source.page}`;
-      list.append(item);
-    }
-    sourceSection.append(heading, list);
-    content.append(sourceSection);
+  if (message.role === 'assistant') {
+    const mode = document.createElement('div'); mode.className = 'message-mode';
+    mode.textContent = (message.mode || modeSelect.value).toUpperCase(); content.prepend(mode);
+    addEvidence(content, message);
   }
   conversation.append(row);
 }
@@ -104,7 +100,7 @@ function renderHistory() {
     const welcome = document.createElement('div');
     welcome.id = 'welcome';
     welcome.className = 'welcome';
-    welcome.innerHTML = '<div class="welcome-icon" aria-hidden="true">✳</div><h2>What’s on your mind?</h2><p>Your conversation stays in this browser and runs on your machine.</p>';
+    welcome.innerHTML = '<div class="welcome-icon" aria-hidden="true">✳</div><h2>Let’s find your next good choice.</h2><p>Ask a question, explore your sources,<br>or start with an idea below.</p>';
     conversation.append(welcome);
   } else {
     messages.forEach(renderMessage);
@@ -125,15 +121,11 @@ form.addEventListener('submit', async (event) => {
   input.value = '';
   input.style.height = 'auto';
   sendButton.disabled = true;
+  modeSelect.disabled = true; clearButton.disabled = true;
+  const loading = document.createElement('p'); loading.className = 'loading-note'; loading.textContent = 'Finding passages and thinking locally…'; conversation.append(loading);
 
   try {
-    const response = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages }),
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || 'The request failed.');
+    const data = await apiRequest('/api/chat', {messages: messages.slice(-39), mode: modeSelect.value});
     messages.push(data.message);
     saveMessages();
     renderHistory();
@@ -147,7 +139,8 @@ form.addEventListener('submit', async (event) => {
     conversation.append(notice);
     conversation.scrollTop = conversation.scrollHeight;
   } finally {
-    sendButton.disabled = false;
+    loading.remove();
+    sendButton.disabled = false; modeSelect.disabled = false; clearButton.disabled = false;
     input.focus();
   }
 });
@@ -169,4 +162,12 @@ clearButton.addEventListener('click', () => {
   saveMessages();
   renderHistory();
   input.focus();
+});
+
+modeSelect.addEventListener('change', () => {
+  STORAGE_KEY = 'triple-trouble-' + modeSelect.value;
+  messages = loadMessages(); renderHistory();
+});
+for (const chip of document.querySelectorAll('[data-prompt]')) chip.addEventListener('click', () => {
+  input.value = chip.dataset.prompt; input.focus(); input.dispatchEvent(new Event('input'));
 });

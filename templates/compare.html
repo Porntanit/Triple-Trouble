@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}Compare answers{% endblock %}
+{% block breadcrumb %}COMPARE{% endblock %}
+{% block content %}
+<div class="page-content"><p class="eyebrow">ONE QUESTION. TWO PERSPECTIVES.</p><h1>Does personal context<br><em>make a difference?</em></h1><p class="intro">Same question, passages, model and settings. Only the personalized answer receives your profile. Model outputs can still vary between runs.</p>
+{% if not active_profile %}<p class="notice error"><a href="{{ url_for('profile_page') }}">Create your profile</a> before running a comparison.</p>{% endif %}
+<form id="compare-form" class="panel"><label>Your nutrition question<textarea name="question" maxlength="2000" rows="3" placeholder="How can I put together an affordable lunch?" required></textarea></label><div class="actions"><button class="primary-button" {{ 'disabled' if not active_profile }}>Compare answers ⇄</button><span id="compare-status" role="status">Two local answers may take several minutes.</span></div></form>
+<div id="comparison-results" class="comparison-grid" aria-live="polite"></div>
+<a id="rate-link" class="primary-button inline-button" href="{{ url_for('answer_evaluation_page') }}" hidden>Review & rate this comparison ↗</a>
+<div class="method-note"><h2>Look beyond a confident answer.</h2><p>Judge whether each answer fits your needs, works in daily life, and agrees with the original passages. A valid filename and page number alone do not prove that a claim is supported.</p></div>
+</div>
+{% endblock %}

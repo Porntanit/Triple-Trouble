@@ -1,41 +1,15 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Local Ollama Chat</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <script src="{{ url_for('static', filename='chat.js') }}" defer></script>
-</head>
-<body>
-  <main class="chat-shell">
-    <header class="topbar">
-      <div class="brand-mark" aria-hidden="true">✳</div>
-      <div>
-        <h1>Local Chat</h1>
-        <p><span class="status-dot"></span> Gemma 3 · running locally</p>
-      </div>
-      <nav class="main-nav" aria-label="Main navigation">
-        <a class="nav-link active" href="{{ url_for('index') }}" aria-current="page">Chat</a>
-        <a class="nav-link" href="{{ url_for('documents') }}">Document collection</a>
-      </nav>
-      <button id="clear-button" class="clear-button" type="button" title="Clear conversation">Clear chat</button>
-    </header>
-
-    <section id="conversation" class="conversation" aria-label="Conversation" aria-live="polite">
-      <div id="welcome" class="welcome">
-        <div class="welcome-icon" aria-hidden="true">✳</div>
-        <h2>What’s on your mind?</h2>
-        <p>Your conversation stays in this browser and runs on your machine.</p>
-      </div>
-    </section>
-
-    <form id="chat-form" class="composer">
-      <label class="sr-only" for="message-input">Message</label>
-      <textarea id="message-input" rows="1" placeholder="Message Gemma…" required></textarea>
-      <button id="send-button" type="submit" aria-label="Send message"><span aria-hidden="true">↑</span></button>
-      <p class="composer-note">Local model · Responses may not always be accurate</p>
-    </form>
-  </main>
-</body>
-</html>
+{% extends 'base.html' %}
+{% block title %}Nutrition chat{% endblock %}
+{% block breadcrumb %}CHAT{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='chat.js') }}" defer></script>{% endblock %}
+{% block content %}
+<div class="page-content chat-page">
+  <div class="heading-row"><div><p class="eyebrow">A LITTLE KNOWLEDGE. BETTER EVERYDAY CHOICES.</p><h1>Good food starts<br>with <em>your questions.</em></h1><p class="intro">Ask about food and nutrition, read a label, or scan a meal before you eat.</p></div><div class="hero-orbit" aria-hidden="true"><span>✳</span><small>FOOD FOR THOUGHT</small></div></div>
+  <div class="chat-toolbar"><label for="chat-mode">Answer style <select id="chat-mode"><option value="general">General</option><option value="personalized" {{ 'selected' if active_profile }}>Personalized</option></select></label><span>Separate conversation for each style</span><button id="clear-button" class="clear-button" type="button">Clear chat</button></div>
+  {% if not active_profile %}<p class="subtle-notice"><a href="{{ url_for('profile_page') }}">Save a profile</a> to tailor suggestions to your preferences, budget and routine.</p>{% endif %}
+  <details class="chat-photo-panel"><summary>Scan a food photo or nutrition label ↗</summary>{% include 'image_scanner.html' %}</details>
+  <section id="conversation" class="conversation" aria-label="Conversation" aria-live="polite"></section>
+  <div class="prompt-chips"><button type="button" data-prompt="Suggest an affordable, balanced breakfast and explain the evidence.">An easier breakfast ↗</button><button type="button" data-prompt="Create a practical one-day meal plan with my usual number of meals, respecting my food restrictions and daily budget. Separate document evidence from suggestions. Do not invent exact costs or nutrient values.">Plan a day of meals ↗</button><button type="button" data-prompt="What papers are in my document collection?">Explore nutrition sources ↗</button></div>
+  <form id="chat-form" class="composer"><label class="sr-only" for="message-input">Nutrition question</label><textarea id="message-input" rows="2" maxlength="2000" placeholder="What would you like to eat, understand, or change?" required></textarea><button id="send-button" type="submit" aria-label="Send message">↑</button><p class="composer-note">Gemma 3 · Source references link to your PDFs · Shift + Enter for a new line</p></form>
+</div>
+{% endblock %}

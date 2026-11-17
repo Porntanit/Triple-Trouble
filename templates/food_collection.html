@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}Document collection{% endblock %}
+{% block breadcrumb %}MY FOOD PHOTOS{% endblock %}
+{% block content %}
+<div class="page-content"><p class="eyebrow">THE MEALS YOU CHOSE TO LOG</p><h1>Your food, <em>remembered.</em></h1><p class="intro">Only photos you confirmed as eaten appear here. Scanned previews and questions don't enter your collection.</p>
+{% if not active_profile %}<p class="subtle-notice"><a href="{{ url_for('profile_page') }}">Save your profile</a> to start your own food collection.</p>{% endif %}
+{% if collection_error %}<p class="notice error" role="alert">{{ collection_error }}</p>{% else %}
+<div class="food-gallery">{% for item in photos %}<article class="panel food-photo-card"><a href="{{ url_for('consumed_photo', entry_id=item.id) }}" target="_blank" rel="noopener"><img src="{{ url_for('consumed_photo', entry_id=item.id) }}" alt="{{ item.food }}" loading="lazy"></a><div><p class="eyebrow">{{ item.day }}</p><h2>{{ item.food }}</h2><p>{{ '%g'|format(item.calories) }} kcal <span class="muted">· logged estimate</span></p><a href="{{ url_for('evaluation_page', date=item.day) }}">View this day's log ↗</a></div></article>{% else %}<div class="empty-files"><p>No confirmed meal photos yet.</p><span>Scan a photo in Nutrition chat or Calorie tracker and select “I ate this — add to tracker”.</span></div>{% endfor %}</div>
+{% endif %}
+<details class="method-note"><summary>Nutrition PDF sources</summary><p class="muted">Manage reference documents used for nutrition questions separately from your meal photos.</p><a href="{{ url_for('knowledge_documents') }}">Open nutrition source library ↗</a></details></div>
+{% endblock %}

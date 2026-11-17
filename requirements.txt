@@ -1,3 +1,10 @@
 Flask>=3.0,<4.0
 requests>=2.31,<3.0
 PyMuPDF>=1.24,<2.0
+
+Pillow>=11.0,<13.0
+pyobjc-core==11.1; sys_platform == "darwin"
+pyobjc-framework-Cocoa==11.1; sys_platform == "darwin"
+pyobjc-framework-Quartz==11.1; sys_platform == "darwin"
+pyobjc-framework-CoreML==11.1; sys_platform == "darwin"
+pyobjc-framework-Vision==11.1; sys_platform == "darwin"

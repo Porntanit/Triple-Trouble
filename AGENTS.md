@@ -2,19 +2,19 @@
 
 ## Project Structure & Module Organization
 
-This repository is currently empty: it has no source tree, tests, assets, or project metadata yet. As the project takes shape, keep application code in a clearly named directory (such as `src/`), tests in `tests/` or beside the modules they cover, and static assets in `assets/` or `public/`. Add a README and the relevant package/build manifest when choosing the implementation stack. Keep modules focused and avoid committing generated output or local environment files.
+The local Flask app starts in `app.py`. Keep profile/experiment persistence in `storage.py`, prompt/citation logic in `nutrition.py`, profile energy calculations in `energy.py`, daily logs in `calories.py`, image/OCR and confirmation logic in `food_images.py`, templates in `templates/`, browser code/styles in `static/`, and tests in `tests/`. Preserve the existing document routes and local Ollama models. Never commit uploads, databases, `.session-key`, or `.venv/`.
 
 ## Build, Test, and Development Commands
 
-There are no build, test, or run commands configured yet. When adding a toolchain, document its prerequisites and standard workflows in the README and here. Provide reproducible commands for installing dependencies, running the application, formatting/linting, and executing the full test suite; prefer the repository's package scripts or task runner over undocumented local commands.
+`python3.10 -m venv .venv`, activate it, then `python -m pip install -r requirements.txt`. Run with `python app.py`. Run tests with `python -m unittest discover -s tests -v`. Optional formatting: install `requirements-dev.txt`, then `python -m black --check app.py nutrition.py storage.py calories.py energy.py food_images.py tests`. See README for Ollama model setup and environment variables.
 
 ## Coding Style & Naming Conventions
 
-No formatter or language convention is established yet. Follow the conventions of the selected language and add formatter/linter configuration with the first implementation. Use descriptive, consistent names: modules and files should reflect their responsibility, public APIs should use clear domain terms, and tests should identify the behavior they cover. Keep changes small and format files with the configured tool before review.
+Target Python 3.10 and use Black with the configuration in `pyproject.toml`. Use descriptive names, keep modules focused, and format changed Python files before review.
 
 ## Testing Guidelines
 
-No testing framework or coverage requirement is configured. Add automated tests alongside new behavior and regression fixes, using the chosen framework's standard discovery and naming patterns (for example, `test_*.py` or `*.test.ts`). Tests should be deterministic and runnable with one documented command. Include any necessary setup instructions, but do not commit secrets or machine-specific test data.
+Use standard-library unittest integration tests in `tests/test_app.py`. Isolate all data in temporary directories and mock Ollama for deterministic tests. Explicitly distinguish mocked tests from live-model acceptance checks. Test new behavior and regression fixes without committing private files or machine-specific fixtures.
 
 ## Commit & Pull Request Guidelines
 

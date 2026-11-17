@@ -1,0 +1,11 @@
+<div class="image-scanner">
+<form class="image-scan-form" enctype="multipart/form-data">
+  <div class="scanner-heading"><span class="eyebrow">SCAN · REVIEW · CONFIRM</span><span class="scan-model-status muted">Local image analysis</span></div>
+  <div class="scan-input-grid"><label>Photo type<select name="kind"><option value="meal">Meal photo</option><option value="label">Nutrition label</option></select></label><label>Food name (optional)<input name="food" maxlength="120" placeholder="Leave blank for AI identification"></label></div>
+  <label class="photo-picker">Choose or take a photo<input name="image" type="file" accept="image/jpeg,image/png,image/webp" required></label>
+  <p class="muted">JPG, PNG or WebP · up to 8 MB · Previews expire after one hour and are not added to your collection.</p>
+  <button type="submit" class="primary-button">Analyze photo ↗</button>
+</form>
+<p class="scan-status" role="status" aria-live="polite" hidden></p>
+<div class="scan-preview" hidden></div>
+</div>

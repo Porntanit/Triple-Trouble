@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Your profile{% endblock %}
+{% block breadcrumb %}PROFILE{% endblock %}
+{% block content %}
+<div class="page-content">
+<p class="eyebrow">LET’S MAKE THIS PERSONAL</p><h1>A plate that fits <em>your life.</em></h1><p class="intro">A few everyday details help shape more useful suggestions. No medical history needed.</p>
+<form id="profile-form" class="panel profile-form">
+  <div class="section-label"><span>01</span><h2>You & your routine</h2></div>
+  <div class="form-grid">
+    <label>Name or nickname<input name="name" maxlength="80" required value="{{ active_profile.name if active_profile else '' }}" placeholder="What should we call you?"></label>
+    <input type="hidden" name="age_range" value="{{ active_profile.age_range if active_profile else '18–24' }}">
+    <label>Age (years)<input name="age" type="number" min="18" max="100" step="1" required value="{{ active_profile.age if active_profile and active_profile.age is not none else '' }}"></label>
+    <label>Your goal<select name="dietary_goal" required>{% for choice in goals %}<option {{ 'selected' if active_profile and active_profile.dietary_goal == choice }}>{{ choice }}</option>{% endfor %}</select></label>
+    <label>Typical activity<select name="activity_level" required>{% for choice in activities %}<option {{ 'selected' if active_profile and active_profile.activity_level == choice }}>{{ choice }}</option>{% endfor %}</select></label>
+    <label>Daily food budget (THB)<input type="number" name="meal_budget" min="1" max="10000" step="0.01" required value="{{ active_profile.meal_budget if active_profile else 200 }}"><small>Total for the day; prices are suggestions, not quotes.</small></label>
+    <label>Meals per day<input type="number" name="meals_per_day" min="1" max="6" required value="{{ active_profile.meals_per_day if active_profile else 3 }}"></label>
+  </div>
+  <div class="section-label"><span>02</span><h2>Your energy estimate</h2></div>
+  <div class="form-grid">
+    <label>Height (cm)<input name="height_cm" type="number" min="100" max="250" step="0.1" required value="{{ active_profile.height_cm if active_profile and active_profile.height_cm is not none else '' }}"></label>
+    <label>Weight (kg)<input name="weight_kg" type="number" min="30" max="350" step="0.1" required value="{{ active_profile.weight_kg if active_profile and active_profile.weight_kg is not none else '' }}"></label>
+    <label>Energy equation<select name="energy_equation" required><option value="">Choose equation</option><option value="female" {{ 'selected' if active_profile and active_profile.energy_equation == 'female' }}>Female equation (−161)</option><option value="male" {{ 'selected' if active_profile and active_profile.energy_equation == 'male' }}>Male equation (+5)</option></select><small>The published equation uses these two coefficients; the app does not infer one from your name or photo.</small></label>
+    <div class="profile-energy-box"><span class="eyebrow">ESTIMATED DAILY MAINTENANCE</span><strong id="profile-energy-value">{{ (active_profile.daily_target ~ ' kcal/day') if active_profile and active_profile.daily_target else 'Complete your details' }}</strong><p class="muted">Automatically linked to Calorie tracker after saving. This is an adult maintenance estimate, not a strict daily maximum or a weight-loss prescription.</p></div>
+  </div>
+  <details class="energy-method"><summary>How is this calculated?</summary><p class="muted">Mifflin–St Jeor resting energy × activity factor (1.2 / 1.375 / 1.55 / 1.725). Goal and food budget guide suggestions, not an automatic calorie deficit. Not intended for pregnancy, breastfeeding or medical nutrition needs.</p><a href="https://pubmed.ncbi.nlm.nih.gov/2305711/" target="_blank" rel="noopener">Equation source</a> · <a href="https://www.hhs.texas.gov/sites/default/files/documents/common-comparative-standards-for-rds-ltc-settings.pdf" target="_blank" rel="noopener">Activity factors</a></details>
+  <div class="section-label"><span>03</span><h2>What belongs on your plate</h2></div>
+  <div class="form-grid">
+  {% for field, label, placeholder in [('food_preferences','Food preferences','e.g. Thai food, vegetarian meals'),('foods_disliked','Foods you dislike','e.g. mushrooms'),('allergies','Food allergies','e.g. peanuts; leave blank if none'),('restrictions','Other food restrictions','e.g. no pork; leave blank if none')] %}
+    <label>{{ label }}<textarea name="{{ field }}" maxlength="500" rows="3" placeholder="{{ placeholder }}">{{ active_profile[field] if active_profile else '' }}</textarea></label>
+  {% endfor %}
+  </div>
+  <p class="subtle-notice">For adult educational use. AI cannot guarantee allergy safety; verify ingredients yourself. This browser selects your local profile, with no sign-in. Use a trusted device.</p>
+  <div class="actions"><button class="primary-button" type="submit">Save my profile ↗</button><button class="delete-button" id="delete-profile" type="button">Delete profile & history</button></div>
+  <p id="profile-status" class="profile-feedback" role="status" aria-live="polite" aria-atomic="true" hidden></p>
+  <a id="profile-next" class="outline-button inline-button" href="{{ url_for('index') }}" hidden>Continue to personalized chat ↗</a>
+</form>
+</div>
+{% endblock %}
